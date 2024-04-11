@@ -1,0 +1,43 @@
+﻿<div class="d-flex nav-sublink w-100 @IsActive" @onmouseover="MouseOver" @onmouseleave="MouseOut">
+    <div class="d-flex flex-grow-1" @onclick="@(() => NavigationManager.NavigateTo($"{DocumentType}/{Document.ShortName}"))">
+        @Document.ShortName
+    </div>
+    <FlexSpacer />
+    @if (IsMouseOver || IsActive == "active")
+    {
+        <Icon Class="btn nav-icon-btn" Color="IconColor.Danger" Name="IconName.X" @onclick="@(DeleteClicked)" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public ActiveDocument Document { get; set; }
+
+    [Parameter]
+    public string DocumentType { get; set; }
+
+    [Parameter]
+    public EventCallback<ActiveDocument> OnDeleteClicked { get; set; }
+
+    [Inject]
+    public NavigationManager NavigationManager { get; set; }
+
+    private string IsActive => NavigationManager.Uri.EndsWith($"{Uri.EscapeDataString(DocumentType)}/{Uri.EscapeDataString(Document.ShortName)}") ? "active" : "";
+    private bool IsMouseOver { get; set; }
+
+    private async Task DeleteClicked()
+    {
+        if (OnDeleteClicked.HasDelegate)
+            await OnDeleteClicked.InvokeAsync(Document);
+    }
+
+    private void MouseOver()
+    {
+        IsMouseOver = true;
+    }
+
+    private void MouseOut()
+    {
+        IsMouseOver = false;
+    }
+}

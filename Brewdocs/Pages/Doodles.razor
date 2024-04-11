@@ -1,0 +1,76 @@
+﻿@page "/Doodles"
+@inherits PageBase
+@using Syncfusion
+@using Doodle.State
+
+<div class="container-xl">
+    @if (_loading)
+    {
+
+    }
+
+    @if (_renderedOnce)
+    {
+        <div style="height: 80vh;">
+            <DoodleDraw DataAttributeName="doodle" @ref="_doodleDraw" OnSaveDoodle="SaveDoodle">
+
+            </DoodleDraw>
+        </div>
+    }
+
+</div>
+
+@code {
+    private DoodleDraw _doodleDraw;
+
+    public override string Identifier => "Doodles";
+
+    public override string ThemeColor => "var(--bs-purple)";
+
+    private bool _loading = true;
+
+    private bool _renderedOnce = false;
+
+    protected void OnCreated()
+    {
+        _loading = false;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.ChangeTheme(ThemeColor);
+        base.OnParametersSet();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.ChangeTheme(ThemeColor);
+        base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Yield();
+
+            _renderedOnce = true;
+
+            await Task.Yield();
+
+            StateHasChanged();
+        }
+    }
+
+    private void SaveDoodle(string stateData)
+    {
+        _doodleDraw.Options.ToolbarConfig.ShowDrawActionsUndo = true;
+    }
+
+    private async void ChangeHandler(object sender, EventArgs e)
+    {
+        DoodleStateManager s = (DoodleStateManager)sender;
+    }
+
+}
+

@@ -1,0 +1,233 @@
+﻿@page "/Spreadsheets/{DocumentName}"
+@inherits PageBase
+@using Syncfusion
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.XlsIO
+@using Brewdocs.Components.Spreadsheet
+
+<div class="container-xl">
+    @if (_loading || !_renderedOnce)
+    {
+        <FlexContainer Class="text-align-center">
+            <FlexColumn Gap="4" Style="width:100%;">
+                <h6 style="place-self:center;" class="mb-4">Loading...</h6>
+                <Brewdocs.Components.Shared.Loaders.RollerLoader Color="@_themeColor" Scale="2" />
+            </FlexColumn>
+        </FlexContainer>
+    }
+
+    @if ((CellValues != null && CellValues.Length > 0) || (Workbook != null && Workbook.Worksheets != null))
+    {
+        <Tabs @ref="_tabs" OnShowing="@(args => UpdateShownSheet(args))" EnableFadeEffect="true" NavStyle="NavStyle.Underline">
+
+            @foreach (var sheet in Worksheets)
+            {
+                <Tab Title="@(sheet.Name)">
+                    <Content>
+                    </Content>
+                </Tab>
+            }
+
+        </Tabs>
+    }
+    @if (ActiveWorksheet != null)
+    {
+
+        <table>
+            @for (int rowIndex = 0; rowIndex < CellValues.GetLength(0); rowIndex++)
+            {
+                <tr>
+                    @for (int colIndex = 0; colIndex < CellValues.GetLength(1); colIndex++)
+                    {
+                        <td>
+                            <Cell Data="CellValues[rowIndex, colIndex]" />
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string DocumentName { get; set; }
+
+    private ExcelEngine _excelEngine;
+
+    private IWorkbook Workbook { get; set; } = default!;
+
+    private IWorksheet ActiveWorksheet { get; set; } = default!;
+
+    private List<IWorksheet> Worksheets { get; set; } = default!;
+
+    public override string Identifier => "Spreadsheets";
+
+    private bool _loading = true;
+
+    private bool _renderedOnce = false;
+
+    private string _themeColor = "var(--bs-green)";
+
+    public override string ThemeColor => "var(--bs-green)";
+
+    private string ImageUrl = "";
+
+    private IBrowserFile SelectedFile = null;
+
+    private string SelectedFileName => this.SelectedFile?.Name ?? "No file uploaded";
+
+    private string ErrorText = null;
+
+    private CellViewModel[,] CellValues { get; set; } = default!;
+
+    private BlazorBootstrap.Tabs _tabs { get; set; } = default!;
+
+    protected void OnCreated()
+    {
+        _loading = false;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.ChangeTheme(_themeColor);
+        //base.ChangeTheme("var(--bs-success-text-emphasis)");
+        base.OnParametersSet();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.ChangeTheme(ThemeColor);
+        base.OnInitialized();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(DocumentName))
+        {
+            var document = await base.GetDocumentAsync(DocumentName + ".xlsx");
+
+            if (document == null)
+            {
+                Console.WriteLine($"Failed to open document: {DocumentName}");
+                return;
+            }
+
+            byte[] contentBytes = (byte[])document.Data;
+
+            _excelEngine = new ExcelEngine();
+
+            //Instantiate the Excel application object
+            IApplication application = _excelEngine.Excel;
+
+            //Set the default application version
+            application.DefaultVersion = ExcelVersion.Xlsx;
+
+            // Create a new MemoryStream and write the contentBytes to it
+            using var memoryStream = new MemoryStream();
+            await memoryStream.WriteAsync(contentBytes, 0, contentBytes.Length);
+            memoryStream.Position = 0;
+
+            Workbook = application.Workbooks.Open(memoryStream);
+
+
+            ActiveWorksheet = Workbook.Worksheets[0];
+
+            Console.WriteLine(Workbook.Worksheets.Count);
+
+            Worksheets = Workbook.Worksheets.Select(x => x).ToList();
+
+            foreach (var worksheet in Worksheets)
+            {
+                Console.WriteLine(worksheet.Name);
+            }
+
+            SetCellValues(ActiveWorksheet);
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Spreadsheets");
+        }
+        await base.OnParametersSetAsync();
+    }
+
+    protected void SetCellValues(IWorksheet sheet)
+    {
+        // Get the number of rows and columns that contain data
+        int rowCount = sheet.UsedRange.Rows.Count();
+        int colCount = sheet.UsedRange.Columns.Count();
+
+        Console.WriteLine($"Rows {rowCount} - Cols {colCount}");
+
+        // Create a 2D array to store the cell values
+        CellValues = new CellViewModel[rowCount, colCount];
+
+        // Iterate over the rows
+        for (int rowIndex = 1; rowIndex <= rowCount; rowIndex++)
+        {
+            // Iterate over the columns
+            for (int colIndex = 1; colIndex <= colCount; colIndex++)
+            {
+                // Get the value of the cell and store it in the array
+                CellValues[rowIndex - 1, colIndex - 1] = new CellViewModel
+                {
+                    X = rowIndex - 1,
+                    Y = colIndex - 1,
+                    Cell = ActiveWorksheet.Range[rowIndex, colIndex].Text,
+                    Value = ActiveWorksheet.Range[rowIndex, colIndex].Value,
+                };
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+            _renderedOnce = true;
+
+            OnCreated();
+
+            StateHasChanged();
+        }
+    }
+
+    protected CellViewModel GetCellModel(IWorksheet sheet, int x, int y)
+    {
+        return new CellViewModel()
+        {
+            X = x,
+            Y = y,
+            Cell = sheet.Range[x, y].Text,
+            Value = sheet.Range[x, y].Value,
+        };
+    }
+
+    protected async Task UpdateShownSheet(TabsEventArgs args)
+    {
+        var sheetName = args.ActiveTabTitle;
+
+        foreach (var worksheet in Workbook.Worksheets)
+        {
+            Console.WriteLine($"{sheetName} : {worksheet.Name}");
+            if (worksheet.Name.Equals(sheetName, StringComparison.OrdinalIgnoreCase))
+            {
+                ActiveWorksheet = worksheet;
+                SetCellValues(ActiveWorksheet);
+
+                StateHasChanged();
+                break;
+            }
+        }
+
+        await Task.CompletedTask;
+    }
+
+    private void Dispose()
+    {
+        _excelEngine.Dispose();
+    }
+
+}
+

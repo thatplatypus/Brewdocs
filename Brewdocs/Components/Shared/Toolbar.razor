@@ -1,0 +1,15 @@
+﻿<FlexRow>
+    <FlexSpacer />
+    <Button>Save</Button>
+</FlexRow>
+
+@code {
+
+    [Parameter]
+    public string DocumentType { get; set; }
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+
+}
+

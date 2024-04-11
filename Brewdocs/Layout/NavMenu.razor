@@ -1,0 +1,190 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <FlexRow>
+        @if (!@IconMenuActive)
+        {
+            <Icon Name="IconName.PersonWorkspace" Color="IconColor.Secondary" Size="IconSize.x4" />
+            <a class="navbar-brand" href="">Brewdocs</a>
+        }
+        else
+        {
+            <Icon Name="IconName.PersonWorkspace" Color="IconColor.Secondary" Size="IconSize.x4" Style="margin-left:-0.25em;" />
+        }
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </FlexRow>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <Brewdocs.Components.Shared.FlexRow Gap="1">
+
+                    <Icon Name="IconName.HouseDoor" Size="IconSize.x4" Class="mx-2" />
+                    @if (!@IconMenuActive)
+                    {
+                        <label>Home</label>
+                    }
+                </Brewdocs.Components.Shared.FlexRow>
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Documents">
+                <Brewdocs.Components.Shared.FlexRow Gap="1">
+                    <Icon Name="IconName.FileText" Size="IconSize.x4" Class="mx-2" />
+                    @if (!@IconMenuActive)
+                    {
+                        <label>Documents</label>
+                    }
+                </Brewdocs.Components.Shared.FlexRow>
+            </NavLink>
+            @if (!IconMenuActive && ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Documents).Count() > 0)
+            {
+                <FlexColumn Gap="1" Style="padding-left:0.5em;padding-top:0.25em;padding-right:0.5em;">
+                    @foreach (ActiveDocument document in ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Documents))
+                    {
+                        <SubNavLink DocumentType="@DocumentTypes.Documents" Document="document" OnDeleteClicked="DocumentDeleted" />
+                    }
+                </FlexColumn>
+            }
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Spreadsheets">
+                <Brewdocs.Components.Shared.FlexRow Gap="1">
+                    <Icon Name="IconName.FileSpreadsheet" Size="IconSize.x4" Class="mx-2" />
+                    @if (!@IconMenuActive)
+                    {
+                        <label>Spreadsheets</label>
+                    }
+                </Brewdocs.Components.Shared.FlexRow>
+            </NavLink>
+            @if (!IconMenuActive && ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Spreadsheets).Count() > 0)
+            {
+                <FlexColumn Gap="1" Style="padding-left:0.5em;padding-top:0.25em;padding-right:0.5em;">
+                    @foreach (ActiveDocument document in ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Spreadsheets))
+                    {
+                        <SubNavLink DocumentType="@DocumentTypes.Spreadsheets" Document="document" OnDeleteClicked="DocumentDeleted" />
+                    }
+                </FlexColumn>
+            }
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Doodles">
+                <Brewdocs.Components.Shared.FlexRow Gap="1">
+                    <Icon Name="IconName.Brush" Size="IconSize.x4" Class="mx-2" />
+                    @if (!@IconMenuActive)
+                    {
+                        <label>Doodles</label>
+                    }
+                </Brewdocs.Components.Shared.FlexRow>
+            </NavLink>
+            @if (!IconMenuActive && ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Doodles).Count() > 0)
+            {
+                <FlexColumn Gap="1" Style="padding-left:0.5em;padding-top:0.25em;padding-right:0.5em;">
+                    @foreach (ActiveDocument document in ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Doodles))
+                    {
+                        <SubNavLink DocumentType="@DocumentTypes.Doodles" Document="document" OnDeleteClicked="DocumentDeleted" />
+                    }
+                </FlexColumn>
+            }
+        </div>
+    </nav>
+
+
+</div>
+
+<div class="bottom-row" style="@(IconMenuActive ? "width:80px" : "width:200px")">
+    <div class="icon-menu-arrow">
+        @if (!@IconMenuActive)
+        {
+            <Icon Color="IconColor.Secondary" Name="IconName.ArrowLeft" Class="mr-4 icon-btn nav-icon-toggle-btn" Size="IconSize.x4" @onclick="ToggleIconMenu" />
+        }
+        else
+        {
+            <Icon Color="IconColor.Secondary" Name="IconName.ArrowRight" Class="mr-4 icon-btn nav-icon-toggle-btn" Size="IconSize.x4" @onclick="ToggleIconMenu" />
+        }
+    </div>
+</div>
+
+@code {
+    //bool to send to MainLayout for shrinking sidebar and showing/hide menu text
+    private bool IconMenuActive { get; set; } = false;
+
+    //EventCallback for sending bool to MainLayout
+    [Parameter]
+    public EventCallback<bool> ShowIconMenu { get; set; }
+
+    [Inject]
+    public IActiveDocumentService ActiveDocumentService { get; set; }
+
+    [Inject]
+    public NavigationManager NavigationManager { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        ActiveDocumentService.ActiveDocumentsChanged += StateHasChanged;
+
+        _activeSpreadsheets = await GetActiveDocumentsAsync("Spreadsheets");
+    }
+
+    private List<ActiveDocument> _activeSpreadsheets { get; set; } = default!;
+
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    //Method to toggle IconMenuActive bool and send bool via EventCallback
+    private async Task ToggleIconMenu()
+    {
+        IconMenuActive = !IconMenuActive;
+        await ShowIconMenu.InvokeAsync(IconMenuActive);
+    }
+
+    private async Task<List<ActiveDocument>> GetActiveDocumentsAsync(string documentType)
+    {
+        return (await ActiveDocumentService.GetAllAsync())
+            .FindAll(x => x.DocumentType == documentType)
+            .ToList();
+    }
+
+    private async Task DocumentDeleted(ActiveDocument document)
+    {
+        Console.WriteLine(document.Name);
+        await ActiveDocumentService.RemoveAsync(document);
+
+        var remainingDocumentsInSameType = ActiveDocumentService.ActiveDocuments
+            .Where(x => x.DocumentType == document.DocumentType)
+            .ToList();
+
+        if (remainingDocumentsInSameType.Any())
+        {
+            // Navigate to the first remaining document in the same type
+            var firstRemainingDocument = remainingDocumentsInSameType.First();
+            NavigationManager.NavigateTo($"{firstRemainingDocument.DocumentType}/{firstRemainingDocument.ShortName}");
+        }
+        else
+        {
+            // Navigate to the larger area
+            NavigationManager.NavigateTo($"{document.DocumentType}");
+        }
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+
+        ActiveDocumentService.ActiveDocumentsChanged -= StateHasChanged;
+
+    }
+}

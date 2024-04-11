@@ -1,0 +1,112 @@
+﻿@page "/Documents/{DocumentName}"
+@inherits PageBase
+@using Syncfusion
+@using Syncfusion.Blazor.DocumentEditor
+
+<div class="container-xl">
+    @if (_loading)
+    {
+        <FlexContainer Class="text-align-center">
+            <FlexColumn Gap="4">
+                <h6 style="place-self:center;" class="mb-4">Loading...</h6>
+                <Brewdocs.Components.Shared.Loaders.RollerLoader Color="@_themeColor" Scale="2" />
+            </FlexColumn>
+        </FlexContainer>
+    }
+
+    @if (_renderedOnce)
+    {
+        <SfDocumentEditorContainer @ref="_container" EnableToolbar="true" Height="90vh">
+            <DocumentEditorContainerEvents ContextMenuItemSelected="ContextMenuItemSelectedHandler" Created="OnCreated"></DocumentEditorContainerEvents>
+        </SfDocumentEditorContainer>
+    }
+
+</div>
+
+@code {
+    [Parameter]
+    public string DocumentName { get; set; }
+
+    public override string Identifier => DocumentTypes.Documents;
+
+    public override string ThemeColor => "var(--bs-cyan)";
+
+    private string _themeColor = "var(--bs-cyan)";
+
+    private bool _loading = true;
+
+    private bool _renderedOnce = false;
+
+    private SfDocumentEditorContainer _container;
+
+    protected async void OnCreated()
+    {
+        _loading = false;
+        await LoadDocument();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.ChangeTheme(ThemeColor);
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(DocumentName))
+        {
+            await LoadDocument();
+        }
+        else
+        {
+            NavigationManager.NavigateTo($"{Identifier}");
+        }
+
+        await base.OnParametersSetAsync();
+    }
+
+    protected async Task LoadDocument()
+    {
+        var document = await base.GetDocumentAsync(DocumentName + ".docx");
+
+        if (document == null || document.Data == null)
+        {
+            NavigationManager.NavigateTo($"{Identifier}");
+
+        }
+
+        Console.WriteLine(document?.Name);
+
+        Console.WriteLine(document?.Data?.ToString().Length);
+
+        byte[] bytes = (byte[])document.Data;
+        var stream = new MemoryStream(bytes);
+
+        if (_container != null)
+        {
+            await _container.DocumentEditor.OpenAsync(stream, ImportFormatType.Docx);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+
+            await Task.Delay(100);
+
+            _renderedOnce = true;
+
+            await Task.Yield();
+
+            StateHasChanged();
+        }
+    }
+
+    protected async Task ContextMenuItemSelectedHandler()
+    {
+
+    }
+
+}

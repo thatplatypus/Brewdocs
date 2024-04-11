@@ -1,0 +1,15 @@
+﻿<span class="grid-cell">
+    @Data.Value
+</span>
+
+@code {
+    [Parameter]
+    public CellViewModel Data { get; set; } = default!;
+
+    [Parameter]
+    public string Class { get; set; } = default!;
+
+    [Parameter]
+    public string Style { get; set; } = default!;
+}
+

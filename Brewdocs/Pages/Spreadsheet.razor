@@ -1,0 +1,181 @@
+﻿@page "/Spreadsheets"
+@inherits PageBase
+@using Syncfusion.XlsIO
+
+<div class="container-xl">
+    <FlexColumn>
+        <FlexRow>
+            <DocumentDropZone Color="@ThemeColor" SupportedFiles="@(new List<string>() {"xls", "xlsx" })" OnInputFileChange="base.OnInputFileChange" />
+            <Card>
+                <CardBody @onclick="@AddSpreadsheetAsync">
+                    <Icon Style="@($"color:{ThemeColor};")" Size="IconSize.x1" Name="IconName.FilePlus" />
+                </CardBody>
+            </Card>
+            <FlexColumn>
+                <FlexRow>
+                    <div class="d-flex mb-3" data-bs-theme="@(InvertedColorMode(ThemeService.Mode))">
+                        <div class="flex-fill">
+                            <RangeInput TValue="int" @bind-Value="_rows" Min="1" Max="26" />
+                        </div>
+                    </div>
+                    <Badge Color="BadgeColor.Primary" Class="mx-2" VisuallyHiddenText="Rows">@_rows</Badge>
+                    <span class="text-muted">Rows</span>
+                </FlexRow>
+
+                <FlexRow>
+                    <div class="d-flex mb-3" data-bs-theme="@(InvertedColorMode(ThemeService.Mode))">
+                        <div class="flex-fill">
+                            <RangeInput TValue="int" @bind-Value="_columns" Min="1" Max="26" />
+                        </div>
+                    </div>
+                    <Badge Color="BadgeColor.Primary" Class="mx-2" VisuallyHiddenText="Columns">@_columns</Badge>
+                    <span class="text-muted">Columns</span>
+                </FlexRow>
+            </FlexColumn>
+        </FlexRow>
+        <FlexRow>
+            <FlexColumn Class="w-100">
+                <Grid TItem="ActiveDocument"
+                      Class="table table-hover table-bordered table-striped w-100 text-body"
+                      DataProvider="ActiveDocumentDataProvider"
+                      AllowFiltering="false"
+                      AllowPaging="true"
+                      PageSize="5"
+                      Responsive="true">
+
+                    <GridColumn TItem="ActiveDocument" HeaderText="Type">
+                        @context.DocumentType
+                    </GridColumn>
+
+                    <GridColumn TItem="ActiveDocument" HeaderText="Name">
+                        @context.Name
+                    </GridColumn>
+
+                    <GridColumn TItem="ActiveDocument">
+                        <Button @onclick="@(() => NavigationManager.NavigateTo($"{context.DocumentType}/{context.ShortName}"))">Open</Button>
+                    </GridColumn>
+                </Grid>
+            </FlexColumn>
+        </FlexRow>
+    </FlexColumn>
+</div>
+
+@code {
+
+    public override string Identifier => "Spreadsheets";
+
+    private bool _loading = true;
+
+    private bool _renderedOnce = false;
+
+    private string _themeColor = "var(--bs-green)";
+
+    public override string ThemeColor => "var(--bs-green)";
+
+    private string ImageUrl = "";
+
+    private IBrowserFile SelectedFile = null;
+
+    private string SelectedFileName => this.SelectedFile?.Name ?? "No file uploaded";
+
+    private string ErrorText = null;
+
+    private List<ActiveDocument> _activeDocuments { get; set; }
+
+    private int _rows = 2;
+
+    private int _columns = 2;
+
+    private Func<string, string> InvertedColorMode = (color) => color.Equals("Dark", StringComparison.OrdinalIgnoreCase) ? "light" : "dark";
+
+    protected override Func<IBrowserFile, Task<bool>> ValidateFileAsync => async (file) =>
+    {
+        // Add your Excel file validation logic here
+        return file.Name.EndsWith(".xls") || file.Name.EndsWith(".xlsx");
+    };
+
+    protected void OnCreated()
+    {
+        _loading = false;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.ChangeTheme(ThemeColor);
+        base.OnParametersSet();
+    }
+
+    protected override void OnInitialized()
+    {
+        ThemeService.ColorModeChanged += StateHasChanged;
+        base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _renderedOnce = true;
+
+            OnCreated();
+
+            StateHasChanged();
+        }
+    }
+
+    protected async Task AddSpreadsheetAsync()
+    {
+        using (ExcelEngine engine = new ExcelEngine())
+        {
+            //Instantiate the Excel application object
+            IApplication application = engine.Excel;
+
+            //Assigns default application version
+            application.DefaultVersion = ExcelVersion.Xlsx;
+
+            //A new workbook is created equivalent to creating a new workbook in Excel
+            //Create a workbook with 1 worksheet
+            IWorkbook workbook = application.Workbooks.Create(1);
+
+            //Access first worksheet from the workbook
+            IWorksheet worksheet = workbook.Worksheets[0];
+
+            //Adding text to a cell
+            worksheet.Range["A1"].Text = "Hello World";
+
+            var filename = "Untitled.xlsx";
+
+            //Saving the workbook as stream
+            var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+
+            var document = new ActiveDocument()
+            {
+                DocumentType = Identifier,
+                Name = filename,
+                Data = stream.ToArray()
+            };
+
+            await base.AddActiveDocumentAsync(filename, document);
+
+            //Dispose stream
+            stream.Dispose();
+
+            NavigationManager.NavigateTo($"{Identifier}/{document.ShortName}");
+        }
+    }
+
+    private async Task<GridDataProviderResult<ActiveDocument>> ActiveDocumentDataProvider(GridDataProviderRequest<ActiveDocument> request)
+    {
+        if (_activeDocuments is null)
+            _activeDocuments = ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == Identifier).ToList();
+
+        return await Task.FromResult(request.ApplyTo(_activeDocuments));
+    }
+
+    public void Dispose()
+    {
+        ThemeService.ColorModeChanged -= StateHasChanged;
+    }
+}
+

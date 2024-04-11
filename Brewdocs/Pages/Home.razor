@@ -1,0 +1,91 @@
+﻿@page "/"
+@inherits PageBase
+
+<PageTitle>Home</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <!-- Cards for creating new documents -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">New Document</h5>
+                    <p class="card-text">Create a new document.</p>
+                    <a href="#" class="btn btn-primary">Create</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">New Spreadsheet</h5>
+                    <p class="card-text">Create a new spreadsheet.</p>
+                    <a href="#" class="btn btn-primary">Create</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">New Doodle</h5>
+                    <p class="card-text">Create a new doodle.</p>
+                    <a href="#" class="btn btn-primary">Create</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Table for LRU cache documents -->
+        <div class="col-md-8">
+            <Grid TItem="RecentDocument"
+                  Class="table table-hover table-bordered table-striped"
+                  DataProvider="RecentDocumentDataProvider"
+                  AllowPaging="true"
+                  PageSize="5"
+                  Responsive="true">
+
+                <GridColumn TItem="RecentDocument" HeaderText="Type">
+                    @context.Document.DocumentType
+                </GridColumn>
+
+                <GridColumn TItem="RecentDocument" HeaderText="Name">
+                    @context.Document.Name
+                </GridColumn>
+
+                <GridColumn TItem="RecentDocument">
+                    <Button @onclick="@(() => NavigationManager.NavigateTo($"{context.Document.DocumentType}/{context.Document.ShortName}"))">Open</Button>
+                </GridColumn>
+
+
+            </Grid>
+        </div>
+
+        <!-- File dropzone / upload -->
+        <div class="col-md-4">
+            <!-- Dropzone component here -->
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject]
+    ILRUCacheService LRUCache { get; set; }
+
+    [Inject]
+    NavigationManager NavigationManager { get; set; }
+
+    private List<RecentDocument> _recentDocuments { get; set; }
+
+    public override string Identifier => "Home";
+
+    public override string ThemeColor => "var(--bs-primary)";
+
+    private async Task<GridDataProviderResult<RecentDocument>> RecentDocumentDataProvider(GridDataProviderRequest<RecentDocument> request)
+    {
+        if (_recentDocuments is null)
+            _recentDocuments = await LRUCache.GetAllAsync();
+
+        return await Task.FromResult(request.ApplyTo(_recentDocuments));
+    }
+}

@@ -1,0 +1,22 @@
+﻿
+<FileDropZone class="drop-zone w-50 border pb-4" style="@($"color:{Color};")">
+    <FlexColumn>
+        <Icon Name="IconName.Upload" Size="IconSize.x1" Style="place-self:center;margin-top:2em;" />
+        <label style="align-self:center;">Drag and Drop file(s) here or choose file</label>
+        <InputFile class="form-control w-50" style="align-self:center;" OnChange="OnInputFileChange" />
+        <div class="text-muted" style="align-self:center;">@SupportedFilesText supported</div>
+    </FlexColumn>
+</FileDropZone>
+
+@code {
+    [Parameter]
+    public EventCallback<InputFileChangeEventArgs> OnInputFileChange { get; set; }
+
+    [Parameter]
+    public string Color { get; set; }
+
+    [Parameter]
+    public List<string> SupportedFiles { get; set; }
+
+    private string SupportedFilesText => string.Join(", ", SupportedFiles);
+}

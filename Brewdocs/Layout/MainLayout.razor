@@ -1,0 +1,83 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+
+
+<div class="page" data-bs-theme="@(_isDarkMode ? "dark" : "light")">
+    <div style="@($"{IconMenuCssClass} {ThemeService.ColorCssStyle}")">
+        <NavMenu ShowIconMenu="ToggleIconMenu" />
+    </div>
+
+    <main>
+        <div class="top-row px-4" style="background-color: var(--bs-primary-bg-subtle);">
+            <Breadcrumb Items="BreadcrumbService.Breadcrumbs" />
+            <FlexSpacer />
+            @if (_isDarkMode)
+            {
+                <Tooltip Placement="TooltipPlacement.Bottom" Title="Light Mode">
+                    <Icon Class="btn icon-btn" Color="IconColor.Primary" Name="IconName.Sun" @onclick="ToggleColorMode" />
+                </Tooltip>
+            }
+            else
+            {
+                <Tooltip Placement="TooltipPlacement.Bottom" Title="Dark Mode">
+                    <Icon Class="btn icon-btn" Color="IconColor.Primary" Name="IconName.Moon" @onclick="ToggleColorMode" />
+                </Tooltip>
+            }
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code{
+    private bool _iconMenuActive { get; set; }
+    private string? IconMenuCssClass => _iconMenuActive ? "width: 80px;" : null;
+    //private string? ThemeCssStyle => "background-color:var(--bs-primary)";
+    //private Theme theme = new Theme { Color = "var(--bs-primary)" };
+
+    [Inject]
+    ThemeService ThemeService { get; set; } = default!;
+
+    [Inject]
+    Brewdocs.Components.Breadcrumbs.BreadcrumbService BreadcrumbService { get; set; } = default!;
+
+    private bool _isDarkMode = false;
+
+    protected override void OnInitialized()
+    {
+        ThemeService.ThemeChanged += StateHasChanged;
+        ThemeService.ColorModeChanged += StateHasChanged;
+        BreadcrumbService.OnChange += StateHasChanged;
+
+        ThemeService.ChangeTheme(ThemeService.Color);
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+    }
+
+    protected void ToggleIconMenu(bool iconMenuActive)
+    {
+        _iconMenuActive = iconMenuActive;
+    }
+
+    protected async Task ToggleColorMode()
+    {
+        _isDarkMode = !_isDarkMode;
+        ThemeService.ToggleColorMode();
+        StateHasChanged();
+    }
+
+
+    public void Dispose()
+    {
+
+        ThemeService.ThemeChanged -= StateHasChanged;
+        ThemeService.ColorModeChanged -= StateHasChanged;
+        BreadcrumbService.OnChange -= StateHasChanged;
+
+    }
+}
