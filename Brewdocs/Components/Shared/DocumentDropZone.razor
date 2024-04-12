@@ -1,5 +1,5 @@
 ﻿
-<FileDropZone class="drop-zone w-50 border pb-4" style="@($"color:{Color};")">
+<FileDropZone class="@($"drop-zone {sizeCss} border pb-4")" style="@($"color:{Color};")">
     <FlexColumn>
         <Icon Name="IconName.Upload" Size="IconSize.x1" Style="place-self:center;margin-top:2em;" />
         <label style="align-self:center;">Drag and Drop file(s) here or choose file</label>
@@ -14,6 +14,11 @@
 
     [Parameter]
     public string Color { get; set; }
+
+    [Parameter]
+    public int Size { get; set; } = 50;
+
+    private string sizeCss => $"w-{Size}";
 
     [Parameter]
     public List<string> SupportedFiles { get; set; }

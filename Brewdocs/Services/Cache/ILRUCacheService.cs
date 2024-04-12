@@ -8,6 +8,8 @@ namespace Brewdocs.Services.Cache
         Task<RecentDocument> GetAsync(string key);
 
         Task<List<RecentDocument>> GetAllAsync();
+
+        Task ClearCacheAsync();
     }
 }
 

@@ -1,0 +1,44 @@
+﻿@inherits Brewdocs.Components.Viewer.ViewerPage
+@page "/Viewer/{DocumentName}"
+@using Syncfusion.Blazor.SfPdfViewer
+
+@if (DocumentPath != "")
+{
+    <SfPdfViewer2 DocumentPath="@DocumentPath"
+                  Height="90dvh"
+                  Width="100%">
+    </SfPdfViewer2>
+}
+
+@code {
+    [Parameter]
+    public string DocumentName { get; set; } = "";
+
+    private string DocumentPath { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(DocumentName) && string.IsNullOrWhiteSpace(DocumentPath))
+        {
+            var document = await base.GetDocumentAsync(DocumentName + ".pdf");
+
+            if (document == null)
+            {
+                Console.WriteLine($"Failed to open document: {DocumentName}");
+                return;
+            }
+
+            byte[] contentBytes = (byte[])document.Data;
+
+            DocumentPath = "data:application/pdf;base64," + Convert.ToBase64String(contentBytes);
+
+            StateHasChanged();
+        }
+        else
+        {
+            NavigationManager.NavigateTo(DocumentTypes.Viewer);
+        }
+        await base.OnInitializedAsync();
+    }
+}
+

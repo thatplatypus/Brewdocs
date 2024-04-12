@@ -9,7 +9,11 @@ namespace Brewdocs.Services.Cache
 
         public byte[] Data { get; set; }
 
+        public DateTime LastAccessed { get; set; } = DateTime.Now;
+
         public string ShortName => Name.IndexOf('.') > 0 ? Name[..Name.IndexOf('.')] : Name;
+
+        public string FileExtension => Name.Contains('.') ? Name[(Name.LastIndexOf('.') + 1)..] : string.Empty;
     }
 }
 

@@ -1,0 +1,103 @@
+﻿@inherits ViewerPage
+@page "/Viewer"
+
+<div class="container-xl">
+    <FlexColumn>
+        <FlexRow>
+            <DocumentDropZone Color="@ThemeColor" SupportedFiles="@(new List<string>() {"pdf"})" OnInputFileChange="base.OnInputFileChange" />
+            <Card>
+                <CardBody @onclick="@AddPresentationAsync">
+                    <Icon Style="@($"color:{ThemeColor};")" Size="IconSize.x1" Name="IconName.FilePlus" />
+                </CardBody>
+            </Card>
+        </FlexRow>
+        <FlexRow>
+            <FlexColumn Class="w-100">
+                <Grid TItem="ActiveDocument"
+                      Class="table table-hover table-bordered table-striped w-100 text-body"
+                      DataProvider="ActiveDocumentDataProvider"
+                      AllowFiltering="false"
+                      AllowPaging="true"
+                      PageSize="5"
+                      Responsive="true">
+
+                    <GridColumn TItem="ActiveDocument" HeaderText="Type">
+                        @context.DocumentType
+                    </GridColumn>
+
+                    <GridColumn TItem="ActiveDocument" HeaderText="Name">
+                        @context.Name
+                    </GridColumn>
+
+                    <GridColumn TItem="ActiveDocument">
+                        <Button @onclick="@(() => NavigationManager.NavigateTo($"{context.DocumentType}/{context.ShortName}"))">Open</Button>
+                    </GridColumn>
+                </Grid>
+            </FlexColumn>
+        </FlexRow>
+    </FlexColumn>
+</div>
+
+@code {
+    private bool _loading = true;
+
+    private bool _renderedOnce = false;
+
+    private string ImageUrl = "";
+
+    private IBrowserFile SelectedFile = null;
+
+    private string SelectedFileName => this.SelectedFile?.Name ?? "No file uploaded";
+
+    private string ErrorText = null;
+
+    private List<ActiveDocument> _activeDocuments { get; set; }
+
+    protected void OnCreated()
+    {
+        _loading = false;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.ChangeTheme(ThemeColor);
+        base.OnParametersSet();
+    }
+
+    protected override void OnInitialized()
+    {
+        ThemeService.ColorModeChanged += StateHasChanged;
+        base.OnInitialized();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _renderedOnce = true;
+
+            OnCreated();
+
+            StateHasChanged();
+        }
+    }
+
+    protected async Task AddPresentationAsync()
+    {
+
+
+    }
+
+    private async Task<GridDataProviderResult<ActiveDocument>> ActiveDocumentDataProvider(GridDataProviderRequest<ActiveDocument> request)
+    {
+        if (_activeDocuments is null)
+            _activeDocuments = ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == Identifier).ToList();
+
+        return await Task.FromResult(request.ApplyTo(_activeDocuments));
+    }
+
+    public void Dispose()
+    {
+        ThemeService.ColorModeChanged -= StateHasChanged;
+    }
+}

@@ -55,9 +55,19 @@ namespace Brewdocs.Services.Cache
 
         public Task RemoveAsync(ActiveDocument data)
         {
+            Console.WriteLine($"Key request: {GetKey(data.DocumentType, data.Name)}");
+            PrintCache();
             _cache.Remove(GetKey(data.DocumentType, data.Name));
             ActiveDocumentsChanged.Invoke();
             return Task.CompletedTask;
+        }
+
+        private void PrintCache()
+        {
+            foreach (var kvp in _cache)
+            {
+                Console.WriteLine($"Key {kvp.Key} | Value {kvp.Value}");
+            }
         }
     }
 }

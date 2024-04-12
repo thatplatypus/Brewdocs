@@ -1,58 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' ">
-    <ExternalConsole>true</ExternalConsole>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' ">
-    <ExternalConsole>true</ExternalConsole>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.1" PrivateAssets="all" />
-    <PackageReference Include="Syncfusion.Blazor.Core" Version="25.1.37" />
-    <PackageReference Include="Syncfusion.Blazor.WordProcessor" Version="25.1.37" />
-    <PackageReference Include="Syncfusion.Blazor.Themes" Version="25.1.37" />
-    <PackageReference Include="Blazor.Bootstrap" Version="2.1.0" />
-    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="STDoodle.Doodle" Version="1.0.0" />
-    <PackageReference Include="Syncfusion.Blazor.Grid" Version="25.1.37" />
-    <PackageReference Include="Toolbelt.Blazor.FileDropZone" Version="2.1.1" />
-    <PackageReference Include="Toolbelt.Blazor.ViewTransition" Version="1.0.3" />
-    <PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="25.1.37" />
-    <PackageReference Include="Toolbelt.Blazor.LoadingBar" Version="14.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Components\" />
-    <None Remove="Components\Shared\" />
-    <None Remove="Shared\" />
-    <None Remove="Services\" />
-    <None Remove="Services\Cache\" />
-    <None Remove="Components\Shared\Loaders\" />
-    <None Remove="Components\Breadcrumbs\" />
-    <None Remove="Components\Shared\Navigation\" />
-    <None Remove="Components\Spreadsheet\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Components\" />
-    <Folder Include="Components\Shared\" />
-    <Folder Include="Shared\" />
-    <Folder Include="Services\" />
-    <Folder Include="Services\Cache\" />
-    <Folder Include="Components\Shared\Loaders\" />
-    <Folder Include="Components\Breadcrumbs\" />
-    <Folder Include="Components\Shared\Navigation\" />
-    <Folder Include="Components\Spreadsheet\" />
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(RunConfiguration)' == 'https' ">
+		<ExternalConsole>true</ExternalConsole>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(RunConfiguration)' == 'http' ">
+		<ExternalConsole>true</ExternalConsole>
+	</PropertyGroup>
+	<PropertyGroup>
+		<WasmNativeStrip>true</WasmNativeStrip>
+		<WasmBuildNative>true</WasmBuildNative>
+	</PropertyGroup>
+	<ItemGroup>
+		<NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\2.0.23\*.a" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.4" PrivateAssets="all" />
+		<PackageReference Include="Syncfusion.Blazor.Core" Version="25.1.39" />
+		<PackageReference Include="Syncfusion.Blazor.WordProcessor" Version="25.1.39" />
+		<PackageReference Include="Syncfusion.Blazor.Themes" Version="25.1.39" />
+		<PackageReference Include="Blazor.Bootstrap" Version="2.1.0" />
+		<PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+		<PackageReference Include="STDoodle.Doodle" Version="1.0.0" />
+		<PackageReference Include="Syncfusion.Blazor.Grid" Version="25.1.39" />
+		<PackageReference Include="Toolbelt.Blazor.FileDropZone" Version="2.1.1" />
+		<PackageReference Include="Toolbelt.Blazor.ViewTransition" Version="1.0.3" />
+		<PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="25.1.39" />
+		<PackageReference Include="Toolbelt.Blazor.LoadingBar" Version="14.0.0" />
+		<PackageReference Include="Syncfusion.Blazor.SfPdfViewer" Version="25.1.39" />
+	</ItemGroup>
+	<ItemGroup>
+		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+	</ItemGroup>
 </Project>

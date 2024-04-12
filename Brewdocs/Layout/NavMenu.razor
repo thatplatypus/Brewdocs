@@ -72,6 +72,27 @@
         </div>
 
         <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Presentations">
+                <Brewdocs.Components.Shared.FlexRow Gap="1">
+                    <Icon Name="IconName.FileSlides" Size="IconSize.x4" Class="mx-2" />
+                    @if (!@IconMenuActive)
+                    {
+                        <label>Presentations</label>
+                    }
+                </Brewdocs.Components.Shared.FlexRow>
+            </NavLink>
+            @if (!IconMenuActive && ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Presentations).Count() > 0)
+            {
+                <FlexColumn Gap="1" Style="padding-left:0.5em;padding-top:0.25em;padding-right:0.5em;">
+                    @foreach (ActiveDocument document in ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Presentations))
+                    {
+                        <SubNavLink DocumentType="@DocumentTypes.Presentations" Document="document" OnDeleteClicked="DocumentDeleted" />
+                    }
+                </FlexColumn>
+            }
+        </div>
+
+        <div class="nav-item px-3">
             <NavLink class="nav-link" href="Doodles">
                 <Brewdocs.Components.Shared.FlexRow Gap="1">
                     <Icon Name="IconName.Brush" Size="IconSize.x4" Class="mx-2" />
@@ -87,6 +108,27 @@
                     @foreach (ActiveDocument document in ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Doodles))
                     {
                         <SubNavLink DocumentType="@DocumentTypes.Doodles" Document="document" OnDeleteClicked="DocumentDeleted" />
+                    }
+                </FlexColumn>
+            }
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="Viewer">
+                <Brewdocs.Components.Shared.FlexRow Gap="1">
+                    <Icon Name="IconName.FilePdf" Size="IconSize.x4" Class="mx-2" />
+                    @if (!@IconMenuActive)
+                    {
+                        <label>Viewer</label>
+                    }
+                </Brewdocs.Components.Shared.FlexRow>
+            </NavLink>
+            @if (!IconMenuActive && ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Viewer).Count() > 0)
+            {
+                <FlexColumn Gap="1" Style="padding-left:0.5em;padding-top:0.25em;padding-right:0.5em;">
+                    @foreach (ActiveDocument document in ActiveDocumentService.ActiveDocuments.Where(x => x.DocumentType == DocumentTypes.Viewer))
+                    {
+                        <SubNavLink DocumentType="@DocumentTypes.Viewer" Document="document" OnDeleteClicked="DocumentDeleted" />
                     }
                 </FlexColumn>
             }

@@ -241,3 +241,30 @@ code {
 .table-responsive {
     width: 100%;
 }
+
+.grid-col-icon {
+    max-width: 40px;
+}
+
+.icon-col {
+    background-size: contain;
+    height: 36px;
+    width: 36px;
+    display: flex;
+}
+
+.icon-docx {
+    background-image: url(../icons/docx.svg);
+}
+
+.icon-xlsx {
+    background-image: url(../icons/xlsx.svg);
+}
+
+.icon-pptx {
+    background-image: url(../icons/pptx.svg);
+}
+
+.icon-pdf {
+    background-image: url(../icons/pdf.svg);
+}

@@ -1,0 +1,17 @@
+﻿<Icon CustomIconName="@($"icon-col {_iconName}")" />
+
+@code {
+    [Parameter]
+    public string FileExtension { get; set; }
+
+    public string _iconName => FileExtension switch
+    {
+        "docx" => "icon-docx",
+        "xlsx" => "icon-xlsx",
+        "pdf" => "icon-pdf",
+        "pptx" => "icon-pptx",
+        "png" => "icon-img",
+        _ => "icon-default"
+    };
+}
+

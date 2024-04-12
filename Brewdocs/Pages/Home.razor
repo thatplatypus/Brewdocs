@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inherits PageBase
+@using Brewdocs.Shared
 
 <PageTitle>Home</PageTitle>
 
@@ -35,15 +36,26 @@
         </div>
     </div>
 
+    <FlexRow>
+        <h6>Recent Items</h6>
+        <FlexSpacer />
+        <Button @onclick="ClearRecent">Clear</Button>
+    </FlexRow>
+
     <div class="row mt-4">
         <!-- Table for LRU cache documents -->
         <div class="col-md-8">
-            <Grid TItem="RecentDocument"
+            <Grid @ref="_grid"
+                  TItem="RecentDocument"
                   Class="table table-hover table-bordered table-striped"
                   DataProvider="RecentDocumentDataProvider"
                   AllowPaging="true"
                   PageSize="5"
                   Responsive="true">
+
+                <GridColumn ColumnClass="@(_ => "grid-col-icon")" TItem="RecentDocument">
+                    <FileTypeIcon FileExtension="@context.Document.FileExtension" />
+                </GridColumn>
 
                 <GridColumn TItem="RecentDocument" HeaderText="Type">
                     @context.Document.DocumentType
@@ -51,6 +63,10 @@
 
                 <GridColumn TItem="RecentDocument" HeaderText="Name">
                     @context.Document.Name
+                </GridColumn>
+
+                <GridColumn TItem="RecentDocument" HeaderText="Last Accessed">
+                    @DateFormatUtilities.GetRelativeTime(context.Document.LastAccessed)
                 </GridColumn>
 
                 <GridColumn TItem="RecentDocument">
@@ -61,9 +77,8 @@
             </Grid>
         </div>
 
-        <!-- File dropzone / upload -->
         <div class="col-md-4">
-            <!-- Dropzone component here -->
+            <DocumentDropZone Size="100" Color="@ThemeColor" SupportedFiles="@(new List<string>() {"xls", "xlsx", "csv", "doc", "docx", "pdf", "ppt", "pptx" })" OnInputFileChange="OnInputFileUploaded" />
         </div>
     </div>
 </div>
@@ -77,6 +92,8 @@
 
     private List<RecentDocument> _recentDocuments { get; set; }
 
+    private Grid<RecentDocument> _grid { get; set; } = default!;
+
     public override string Identifier => "Home";
 
     public override string ThemeColor => "var(--bs-primary)";
@@ -87,5 +104,46 @@
             _recentDocuments = await LRUCache.GetAllAsync();
 
         return await Task.FromResult(request.ApplyTo(_recentDocuments));
+    }
+
+    protected async Task ClearRecent()
+    {
+        await LRUCache.ClearCacheAsync();
+        _recentDocuments = null;
+        await _grid.RefreshDataAsync();
+        StateHasChanged();
+    }
+
+    protected async Task OnInputFileUploaded(InputFileChangeEventArgs args)
+    {
+        foreach (var file in args.GetMultipleFiles())
+        {
+            var document = await base.ProcessFileAsync(file, ExtensionToDocumentType(file.Name.Substring(file.Name.IndexOf('.') + 1)));
+
+            if (args.FileCount == 1)
+            {
+                NavigationManager.NavigateTo($"{ExtensionToDocumentType(file.Name.Substring(file.Name.IndexOf('.') + 1))}/{document?.ShortName}");
+            }
+        }
+    }
+
+    private string ExtensionToDocumentType(string fileExtension)
+    {
+        return fileExtension switch
+        {
+            "docx" => DocumentTypes.Documents,
+            "doc" => DocumentTypes.Documents,
+            "rtf" => DocumentTypes.Documents,
+            "txt" => DocumentTypes.Documents,
+            "xlsx" => DocumentTypes.Spreadsheets,
+            "xls" => DocumentTypes.Spreadsheets,
+            "csv" => DocumentTypes.Spreadsheets,
+            "pptx" => DocumentTypes.Presentations,
+            "ppt" => DocumentTypes.Presentations,
+            "png" => DocumentTypes.Doodles,
+            "jpg" => DocumentTypes.Doodles,
+            "pdf" => DocumentTypes.Viewer,
+            _ => DocumentTypes.Viewer
+        };
     }
 }

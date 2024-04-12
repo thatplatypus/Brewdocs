@@ -105,6 +105,11 @@ namespace Brewdocs.Services.Cache
             else
                 _tail = node.Prev;
         }
+
+        public async Task ClearCacheAsync()
+        {
+            await _localStorageService.ClearAsync();
+        }
     }
 
     internal class Node

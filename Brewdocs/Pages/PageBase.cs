@@ -68,8 +68,8 @@ namespace Brewdocs.Pages
 
         public async Task AddActiveDocumentAsync(string key, ActiveDocument data)
         {
-            await ActiveDocumentService.AddAsync(Identifier, key, data);
-            await CacheService.SaveAsync(BuildKey(key), new RecentDocument
+            await ActiveDocumentService.AddAsync(data.DocumentType, key, data);
+            await CacheService.SaveAsync($"{data.DocumentType}:{key}", new RecentDocument
             {
                 Document = data,
                 Path = ""
@@ -78,7 +78,7 @@ namespace Brewdocs.Pages
 
         private async Task ActivateCachedDocument(RecentDocument document, string key)
         {
-            await ActiveDocumentService.AddAsync(Identifier, key, document.Document);
+            await ActiveDocumentService.AddAsync(document.Document.DocumentType, key, document.Document);
         }
 
         public async Task<ActiveDocument> GetDocumentAsync(string key)
@@ -89,7 +89,10 @@ namespace Brewdocs.Pages
             var document = await ActiveDocumentService.GetAsync(Identifier, key);
 
             if (document?.Name != null)
+            {
+                document.LastAccessed = DateTime.Now;
                 return document;
+            }
 
             Console.WriteLine("Retrying from local storage cache");
 
@@ -97,6 +100,7 @@ namespace Brewdocs.Pages
             if (cachedDocument != null)
             {
                 await ActivateCachedDocument(cachedDocument, key);
+                cachedDocument.Document.LastAccessed = DateTime.Now;
                 return cachedDocument.Document;
             }
 
@@ -109,27 +113,38 @@ namespace Brewdocs.Pages
         {
             foreach (var file in args.GetMultipleFiles())
             {
-                if (!await ValidateFileAsync(file))
+                var document = await ProcessFileAsync(file, Identifier);
+
+                if (args.FileCount == 1)
                 {
-                    // Handle invalid file
-                    continue;
+                    NavigationManager.NavigateTo($"{Identifier}/{document?.ShortName}");
                 }
-
-                var contentBytes = new byte[file.Size];
-                using var stream = file.OpenReadStream();
-                await stream.ReadAsync(contentBytes, 0, contentBytes.Length);
-
-                var document = new ActiveDocument()
-                {
-                    DocumentType = Identifier,
-                    Name = file.Name,
-                    Data = contentBytes,
-                };
-
-                await AddActiveDocumentAsync(file.Name, document);
-
-                NavigationManager.NavigateTo($"{Identifier}/{document.ShortName}");
             }
+        }
+
+        protected async Task<ActiveDocument?> ProcessFileAsync(IBrowserFile file, string documentType)
+        {
+            Console.WriteLine($"Processing file {file.Name} for document type {documentType}");
+            if (!await ValidateFileAsync(file))
+            {
+                // Handle invalid file
+                return default;
+            }
+
+            var contentBytes = new byte[file.Size];
+            using var stream = file.OpenReadStream();
+            await stream.ReadAsync(contentBytes);
+
+            var document = new ActiveDocument()
+            {
+                DocumentType = documentType,
+                Name = file.Name,
+                Data = contentBytes,
+            };
+
+            await AddActiveDocumentAsync(file.Name, document);
+
+            return document;
         }
 
         private string BuildKey(string key)

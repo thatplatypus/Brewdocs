@@ -40,6 +40,7 @@ namespace Brewdocs.Services.Cache
             if (document != null)
             {
                 _cache.Remove(document); // Remove the document from its current position
+                document.Document.LastAccessed = DateTime.Now;
                 _cache.Insert(0, document); // Add it back to the start of the list
                 var data = System.Text.Json.JsonSerializer.Serialize(_cache);
                 await _localStorageService.SetItemAsStringAsync(_cacheKey, data ?? "");
@@ -66,6 +67,12 @@ namespace Brewdocs.Services.Cache
 
             var json = System.Text.Json.JsonSerializer.Serialize(_cache);
             await _localStorageService.SetItemAsStringAsync(_cacheKey, json ?? "");
+        }
+
+        public async Task ClearCacheAsync()
+        {
+            await _localStorageService.ClearAsync();
+            _cache = new();
         }
     }
 }

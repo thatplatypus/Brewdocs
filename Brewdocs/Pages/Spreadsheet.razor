@@ -5,7 +5,7 @@
 <div class="container-xl">
     <FlexColumn>
         <FlexRow>
-            <DocumentDropZone Color="@ThemeColor" SupportedFiles="@(new List<string>() {"xls", "xlsx" })" OnInputFileChange="base.OnInputFileChange" />
+            <DocumentDropZone Color="@ThemeColor" SupportedFiles="@(new List<string>() {"xls", "xlsx", "csv" })" OnInputFileChange="base.OnInputFileChange" />
             <Card>
                 <CardBody @onclick="@AddSpreadsheetAsync">
                     <Icon Style="@($"color:{ThemeColor};")" Size="IconSize.x1" Name="IconName.FilePlus" />
@@ -91,7 +91,7 @@
     protected override Func<IBrowserFile, Task<bool>> ValidateFileAsync => async (file) =>
     {
         // Add your Excel file validation logic here
-        return file.Name.EndsWith(".xls") || file.Name.EndsWith(".xlsx");
+        return file.Name.EndsWith(".xls") || file.Name.EndsWith(".xlsx") || file.Name.EndsWith(".ods") || file.Name.EndsWith(".csv");
     };
 
     protected void OnCreated()

@@ -8,6 +8,10 @@ namespace Brewdocs.Shared
         public const string Spreadsheets = "Spreadsheets";
 
         public const string Doodles = "Doodles";
+
+        public const string Presentations = "Presentations";
+
+        public const string Viewer = "Viewer";
     }
 }
 
