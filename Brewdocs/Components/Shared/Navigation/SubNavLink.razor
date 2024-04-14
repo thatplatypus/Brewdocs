@@ -1,5 +1,5 @@
 ﻿<div class="d-flex nav-sublink w-100 @IsActive" @onmouseover="MouseOver" @onmouseleave="MouseOut">
-    <div class="d-flex flex-grow-1" @onclick="@(() => NavigationManager.NavigateTo($"{DocumentType}/{Document.ShortName}"))">
+    <div style="text-overflow:ellipsis;overflow:hidden;" @onclick="@(() => NavigationManager.NavigateTo($"{DocumentType}/{Document.ShortName}"))">
         @Document.ShortName
     </div>
     <FlexSpacer />

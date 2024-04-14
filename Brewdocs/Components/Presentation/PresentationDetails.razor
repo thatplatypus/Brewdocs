@@ -1,6 +1,151 @@
-﻿<h3>Component1</h3>
+﻿@page "/Presentations/{DocumentName}"
+@inherits PresentationPage
+@using Syncfusion
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Presentation
+@using Syncfusion.PresentationRenderer
+
+<div class="container-xl">
+    @if (_loading || !_renderedOnce)
+    {
+        <FlexContainer Class="text-align-center">
+            <FlexColumn Gap="4" Style="width:100%;">
+                <h6 style="place-self:center;" class="mb-4">Loading...</h6>
+                <Brewdocs.Components.Shared.Loaders.RollerLoader Color="@ThemeColor" Scale="2" />
+            </FlexColumn>
+        </FlexContainer>
+    }
+
+    @if (_presentationReady)
+    {
+        <img src="@_imageSrcs[_currentSlideIndex]" />
+
+        <FlexRow JustifyContent="center" Class="p-4">
+            <Button @onclick="PreviousSlide" disabled="@(_currentSlideIndex == 0)" Color="ButtonColor.Primary"><Icon Name="IconName.ChevronLeft" /> Previous </Button>
+            <span>@(_currentSlideIndex + 1) / @_imageSrcs.Count</span>
+            <Button @onclick="NextSlide" disabled="@(_currentSlideIndex == _imageSrcs.Count - 1)" Color="ButtonColor.Primary"> Next <Icon Name="IconName.ChevronRight" /></Button>
+        </FlexRow>
+    }
+</div>
 
 @code {
+    [Parameter]
+    public string DocumentName { get; set; }
+
+    private bool _loading = true;
+
+    private bool _renderedOnce = false;
+
+    private IPresentation _presentation;
+
+    private bool _presentationReady = false;
+
+    private string _imageSrc = "";
+
+    private List<string> _imageSrcs = new List<string>();
+    private int _currentSlideIndex = 0;
+
+    protected void OnCreated()
+    {
+        _loading = false;
+    }
+
+    protected override void OnInitialized()
+    {
+        base.ChangeTheme(ThemeColor);
+        StateHasChanged();
+        base.OnInitialized();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(DocumentName))
+        {
+            await Task.Delay(50);
+
+            _imageSrcs = new List<string>();
+
+            var document = await base.GetDocumentAsync(DocumentName + ".pptx");
+
+            if (document == null)
+            {
+                Console.WriteLine($"Failed to open document: {DocumentName}");
+                return;
+            }
+
+            byte[] contentBytes = (byte[])document.Data;
+
+
+            // Create a new MemoryStream and write the contentBytes to it
+            using var memoryStream = new MemoryStream();
+            await memoryStream.WriteAsync(contentBytes, 0, contentBytes.Length);
+            memoryStream.Position = 0;
+
+            _presentation = Syncfusion.Presentation.Presentation.Open(memoryStream);
+
+            _presentation.PresentationRenderer = new PresentationRenderer();
+
+            foreach (var slide in _presentation.Slides)
+            {
+                Console.WriteLine(slide.Name);
+
+                Console.WriteLine(slide.SlideID);
+            }
+
+            var slideImgs = _presentation.RenderAsImages(Syncfusion.Presentation.ExportImageFormat.Png);
+
+            foreach (var slideImg in slideImgs)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    slideImg.CopyTo(ms);
+
+                    var imagesrc = Convert.ToBase64String(ms.ToArray());
+                    _imageSrcs.Add(string.Format("data:image/jpeg;base64,{0}", imagesrc));
+                }
+            }
+
+            _loading = false;
+            _presentationReady = true;
+        }
+        else
+        {
+            NavigationManager.NavigateTo($"/{Identifier}");
+        }
+        await base.OnParametersSetAsync();
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+            _renderedOnce = true;
+
+            StateHasChanged();
+        }
+    }
+
+    private void NextSlide()
+    {
+        if (_currentSlideIndex < _imageSrcs.Count - 1)
+        {
+            _currentSlideIndex++;
+        }
+    }
+
+    private void PreviousSlide()
+    {
+        if (_currentSlideIndex > 0)
+        {
+            _currentSlideIndex--;
+        }
+    }
+
+    private void Dispose()
+    {
+    }
 
 }
 

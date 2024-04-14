@@ -1,0 +1,41 @@
+﻿<Grid @ref="_grid"
+      TItem="RecentDocument"
+      Class="table table-hover table-bordered table-striped"
+      Data="@RecentDocuments"
+      AllowPaging="true"
+      PageSize="@PageSize"
+      Responsive="true">
+
+    <GridColumn ColumnClass="@(_ => "grid-col-icon")" TItem="RecentDocument">
+        <FileTypeIcon FileExtension="@context.Document.FileExtension" />
+    </GridColumn>
+
+    <GridColumn TItem="RecentDocument" HeaderText="Type">
+        @context.Document.DocumentType
+    </GridColumn>
+
+    <GridColumn TItem="RecentDocument" HeaderText="Name">
+        @context.Document.Name
+    </GridColumn>
+
+    <GridColumn TItem="RecentDocument" HeaderText="Last Accessed">
+        @DateFormatUtilities.GetRelativeTime(context.Document.LastAccessed)
+    </GridColumn>
+
+    <GridColumn TItem="RecentDocument">
+        <Button @onclick="@(() => NavigationManager.NavigateTo($"{context.Document.DocumentType}/{context.Document.ShortName}"))">Open</Button>
+    </GridColumn>
+</Grid>
+
+@code {
+    [Parameter]
+    public int PageSize { get; set; } = 5;
+
+    [Parameter]
+    public List<RecentDocument> RecentDocuments { get; set; } = default;
+
+    [Inject]
+    public NavigationManager NavigationManager { get; set; } = default!;
+
+    private Grid<RecentDocument> _grid { get; set; } = default!;
+}

@@ -34,6 +34,9 @@
 		<PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="25.1.39" />
 		<PackageReference Include="Toolbelt.Blazor.LoadingBar" Version="14.0.0" />
 		<PackageReference Include="Syncfusion.Blazor.SfPdfViewer" Version="25.1.39" />
+		<PackageReference Include="Syncfusion.Presentation.Net.Core" Version="25.1.39" />
+		<PackageReference Include="Syncfusion.PresentationRenderer.Net.Core" Version="25.1.39" />
+		<PackageReference Include="SkiaSharp.Views.Blazor" Version="2.88.8" />
 	</ItemGroup>
 	<ItemGroup>
 		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />

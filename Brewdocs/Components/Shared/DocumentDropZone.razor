@@ -1,10 +1,28 @@
-﻿
-<FileDropZone class="@($"drop-zone {sizeCss} border pb-4")" style="@($"color:{Color};")">
+﻿<FileDropZone class="@($"drop-zone {sizeCss} border pb-4")" style="@($"color:{Color};")">
     <FlexColumn>
         <Icon Name="IconName.Upload" Size="IconSize.x1" Style="place-self:center;margin-top:2em;" />
         <label style="align-self:center;">Drag and Drop file(s) here or choose file</label>
-        <InputFile class="form-control w-50" style="align-self:center;" OnChange="OnInputFileChange" />
+        <InputFile class="form-control w-50" style="align-self:center;" OnChange="HandleFileChange" />
         <div class="text-muted" style="align-self:center;">@SupportedFilesText supported</div>
+        @foreach (var file in _uploadedFiles)
+        {
+            <FlexRow class="py-2 px-4 text-truncate">
+                @file.Name
+                <FlexSpacer />
+                @if (file.Error)
+                {
+                    <Icon Name="IconName.XCircle" Color="IconColor.Danger" />
+                }
+                else if (file.Uploaded)
+                {
+                    <Icon Name="IconName.CheckCircle" Color="IconColor.Success" />
+                }
+                else
+                {
+                    <Spinner Color="SpinnerColor.Primary" Type="SpinnerType.Dots" />
+                }
+            </FlexRow>
+        }
     </FlexColumn>
 </FileDropZone>
 
@@ -23,5 +41,37 @@
     [Parameter]
     public List<string> SupportedFiles { get; set; }
 
+    private List<UploadedFile> _uploadedFiles { get; set; } = new();
+
     private string SupportedFilesText => string.Join(", ", SupportedFiles);
+
+    private async Task HandleFileChange(InputFileChangeEventArgs e)
+    {
+        // Display the files
+        _uploadedFiles = e.GetMultipleFiles().Select(x => new UploadedFile { Name = x.Name, Uploaded = false }).ToList();
+
+        // Invoke the event callback
+        await OnInputFileChange.InvokeAsync(e);
+    }
+
+    public void FileUploaded(string fileName, bool error)
+    {
+        var uploadedFile = _uploadedFiles.First(x => x.Name.Equals(fileName));
+
+        if (uploadedFile != null)
+        {
+            uploadedFile.Uploaded = true;
+            uploadedFile.Error = error;
+            StateHasChanged();
+        }
+    }
+
+    class UploadedFile
+    {
+        public string Name { get; set; }
+
+        public bool Uploaded { get; set; } = false;
+
+        public bool Error { get; set; } = false;
+    }
 }

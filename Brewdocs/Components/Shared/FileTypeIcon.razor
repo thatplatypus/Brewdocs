@@ -1,4 +1,8 @@
-﻿<Icon CustomIconName="@($"icon-col {_iconName}")" />
+﻿@using BlazorBootstrap
+
+<Tooltip Title="@_tooltip">
+    <Icon CustomIconName="@($"icon-col {_iconName}")" />
+</Tooltip>
 
 @code {
     [Parameter]
@@ -12,6 +16,16 @@
         "pptx" => "icon-pptx",
         "png" => "icon-img",
         _ => "icon-default"
+    };
+
+    public string _tooltip => FileExtension switch
+    {
+        "docx" => "Word",
+        "xlsx" => "Excel",
+        "pdf" => "PDF",
+        "pptx" => "Powerpoint",
+        "png" => "Image",
+        _ => "Unknown"
     };
 }
 

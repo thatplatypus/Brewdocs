@@ -188,6 +188,7 @@ code {
     border-radius: 0.25em;
     cursor: pointer;
     align-items: center;
+    max-width: 160px;
 }
 
     .nav-sublink:hover {
@@ -243,7 +244,7 @@ code {
 }
 
 .grid-col-icon {
-    max-width: 40px;
+    width: 52px !important;
 }
 
 .icon-col {

@@ -78,7 +78,7 @@
         </div>
 
         <div class="col-md-4">
-            <DocumentDropZone Size="100" Color="@ThemeColor" SupportedFiles="@(new List<string>() {"xls", "xlsx", "csv", "doc", "docx", "pdf", "ppt", "pptx" })" OnInputFileChange="OnInputFileUploaded" />
+            <DocumentDropZone @ref="_dropzone" Size="100" Color="@ThemeColor" SupportedFiles="@(new List<string>() {"xls", "xlsx", "csv", "doc", "docx", "pdf", "ppt", "pptx" })" OnInputFileChange="OnInputFileUploaded" />
         </div>
     </div>
 </div>
@@ -93,6 +93,8 @@
     private List<RecentDocument> _recentDocuments { get; set; }
 
     private Grid<RecentDocument> _grid { get; set; } = default!;
+
+    private DocumentDropZone _dropzone { get; set; } = default!;
 
     public override string Identifier => "Home";
 
@@ -119,6 +121,8 @@
         foreach (var file in args.GetMultipleFiles())
         {
             var document = await base.ProcessFileAsync(file, ExtensionToDocumentType(file.Name.Substring(file.Name.IndexOf('.') + 1)));
+
+            _dropzone.FileUploaded(file.Name, document == null);
 
             if (args.FileCount == 1)
             {

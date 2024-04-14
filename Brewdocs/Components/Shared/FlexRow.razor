@@ -1,4 +1,4 @@
-﻿<div class="d-flex flex-row @($"gap-{Gap}") justify-content-@JustifyContent align-items-@AlignItems flex-wrap-@FlexWrap w-100">
+﻿<div class="d-flex flex-row @($"gap-{Gap}") justify-content-@JustifyContent align-items-@AlignItems flex-wrap-@FlexWrap @Class w-100">
     @ChildContent
 </div>
 
@@ -17,4 +17,7 @@
 
     [Parameter]
     public string FlexWrap { get; set; } = "nowrap";
+
+    [Parameter]
+    public string Class { get; set; } = "";
 }
