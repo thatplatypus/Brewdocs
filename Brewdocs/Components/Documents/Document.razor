@@ -1,0 +1,86 @@
+﻿@page "/Documents"
+@inherits Components.Documents.DocumentPage
+@using Syncfusion
+@using Syncfusion.Blazor.DocumentEditor
+
+<div class="container-xl">
+    @if (_loading || !_renderedOnce)
+    {
+        <FlexContainer Class="text-align-center">
+            <FlexColumn Gap="4" Style="width:100%;">
+                <h6 style="place-self:center;" class="mb-4">Loading...</h6>
+                <Brewdocs.Components.Shared.Loaders.RollerLoader Color="@ThemeColor" Scale="2" />
+            </FlexColumn>
+        </FlexContainer>
+    }
+
+    @if (_renderedOnce)
+    {
+        <FlexContainer>
+            <FlexColumn Class="w-100">
+                <DocumentDropZone Color="@ThemeColor" SupportedFiles="@(new List<string>() {"doc", "docx" })" OnInputFileChange="base.OnInputFileChange" />
+
+                <FlexRow>
+                    <FlexColumn Class="w-100">
+                        <RecentDocumentTable RecentDocuments="RecentDocuments" />
+                    </FlexColumn>
+                </FlexRow>
+            </FlexColumn>
+        </FlexContainer>
+    }
+
+</div>
+
+@code {
+
+    public override string Identifier => "Documents";
+
+    public override string ThemeColor => "var(--bs-cyan)";
+
+    private bool _loading = true;
+
+    private bool _renderedOnce = false;
+
+    private string ImageUrl = "";
+
+    private IBrowserFile SelectedFile = null;
+
+    private string SelectedFileName => this.SelectedFile?.Name ?? "No file uploaded";
+
+    private string ErrorText = null;
+
+    protected void OnCreated()
+    {
+        _loading = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.ChangeTheme(ThemeColor);
+        base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+
+            await Task.Delay(100);
+
+            _renderedOnce = true;
+            _loading = false;
+
+            await Task.Yield();
+
+            StateHasChanged();
+        }
+    }
+
+}
+

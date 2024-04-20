@@ -37,5 +37,7 @@
     [Inject]
     public NavigationManager NavigationManager { get; set; } = default!;
 
+    public Grid<RecentDocument> Grid => _grid;
+
     private Grid<RecentDocument> _grid { get; set; } = default!;
 }

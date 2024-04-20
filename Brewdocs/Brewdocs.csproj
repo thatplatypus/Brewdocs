@@ -41,4 +41,12 @@
 	<ItemGroup>
 		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
 	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Components\Doodles\" />
+	  <None Remove="Components\Documents\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Components\Doodles\" />
+	  <Folder Include="Components\Documents\" />
+	</ItemGroup>
 </Project>

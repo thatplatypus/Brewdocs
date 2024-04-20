@@ -22,6 +22,8 @@ namespace Brewdocs.Pages
         [Inject]
         public NavigationManager NavigationManager { get; set; } = default!;
 
+        public List<RecentDocument> RecentDocuments { get; set; } = new();
+
         public abstract string Identifier { get; }
 
         public abstract string ThemeColor { get; }
@@ -38,6 +40,13 @@ namespace Brewdocs.Pages
             base.OnInitialized();
         }
 
+        protected override async Task OnInitializedAsync()
+        {
+            RecentDocuments = await GetRecentDocumentsAsync();
+
+            await base.OnInitializedAsync();
+        }
+
         protected override void OnParametersSet()
         {
             if (!string.IsNullOrWhiteSpace(ThemeColor))
@@ -49,6 +58,18 @@ namespace Brewdocs.Pages
         public void ChangeTheme(string color)
         {
             ThemeService.ChangeTheme(color);
+        }
+
+        public async Task<List<RecentDocument>> GetRecentDocumentsAsync()
+        {
+            return await GetRecentDocumentsAsync(Identifier);
+        }
+
+        public async Task<List<RecentDocument>> GetRecentDocumentsAsync(string documentType)
+        {
+            var cached = await CacheService.GetAllAsync();
+            return cached.Where(x => x.Document.DocumentType == documentType)
+                .ToList();
         }
 
         public async Task AddAndCacheDocumentAsync(string key, string path, ActiveDocument data)

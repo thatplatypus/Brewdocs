@@ -33,7 +33,7 @@ builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.UseDoodle((config) =>
 {
-    config.DefaultStrokeColor = "#FF0000";
+    config.DefaultStrokeColor = "#000000";
     config.DefaultStrokeSize = 2;
 
     config.ToolbarConfig = new Doodle.Abstractions.Config.ToolbarConfig

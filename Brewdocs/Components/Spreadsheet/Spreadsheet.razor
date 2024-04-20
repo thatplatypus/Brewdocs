@@ -1,5 +1,5 @@
 ﻿@page "/Spreadsheets"
-@inherits PageBase
+@inherits SpreadsheetPage
 @using Syncfusion.XlsIO
 
 <div class="container-xl">
@@ -35,26 +35,7 @@
         </FlexRow>
         <FlexRow>
             <FlexColumn Class="w-100">
-                <Grid TItem="ActiveDocument"
-                      Class="table table-hover table-bordered table-striped w-100 text-body"
-                      DataProvider="ActiveDocumentDataProvider"
-                      AllowFiltering="false"
-                      AllowPaging="true"
-                      PageSize="5"
-                      Responsive="true">
-
-                    <GridColumn TItem="ActiveDocument" HeaderText="Type">
-                        @context.DocumentType
-                    </GridColumn>
-
-                    <GridColumn TItem="ActiveDocument" HeaderText="Name">
-                        @context.Name
-                    </GridColumn>
-
-                    <GridColumn TItem="ActiveDocument">
-                        <Button @onclick="@(() => NavigationManager.NavigateTo($"{context.DocumentType}/{context.ShortName}"))">Open</Button>
-                    </GridColumn>
-                </Grid>
+                <RecentDocumentTable RecentDocuments="RecentDocuments" />
             </FlexColumn>
         </FlexRow>
     </FlexColumn>
@@ -62,15 +43,9 @@
 
 @code {
 
-    public override string Identifier => "Spreadsheets";
-
     private bool _loading = true;
 
     private bool _renderedOnce = false;
-
-    private string _themeColor = "var(--bs-green)";
-
-    public override string ThemeColor => "var(--bs-green)";
 
     private string ImageUrl = "";
 

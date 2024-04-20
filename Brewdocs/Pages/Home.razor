@@ -36,14 +36,12 @@
         </div>
     </div>
 
-    <FlexRow>
-        <h6>Recent Items</h6>
-        <FlexSpacer />
-        <Button @onclick="ClearRecent">Clear</Button>
-    </FlexRow>
-
     <div class="row mt-4">
-        <!-- Table for LRU cache documents -->
+        <FlexRow>
+            <h6>Recent Items</h6>
+            <FlexSpacer />
+            <Button @onclick="ClearRecent">Clear</Button>
+        </FlexRow>
         <div class="col-md-8">
             <Grid @ref="_grid"
                   TItem="RecentDocument"

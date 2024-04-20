@@ -1,0 +1,79 @@
+﻿@page "/Doodles/{DocumentName}"
+@inherits Components.Doodles.DoodlePage
+
+<div class="container-xl">
+    @if (_loading || !_renderedOnce)
+    {
+        <FlexContainer Class="text-align-center">
+            <FlexColumn Gap="4" Style="width:100%;">
+                <h6 style="place-self:center;" class="mb-4">Loading...</h6>
+                <Brewdocs.Components.Shared.Loaders.RollerLoader Color="@ThemeColor" Scale="2" />
+            </FlexColumn>
+        </FlexContainer>
+    }
+
+    @if (_renderedOnce)
+    {
+        <div style="height: 80vh;">
+            <DoodleDraw DataAttributeName="doodle" @ref="DoodleDraw">
+
+            </DoodleDraw>
+        </div>
+    }
+
+
+</div>
+
+@code {
+    [Parameter]
+    public string DocumentName { get; set; }
+
+    private bool _loading = true;
+
+    private bool _renderedOnce = false;
+
+
+    protected void OnCreated()
+    {
+        _loading = false;
+    }
+
+    protected override void OnInitialized()
+    {
+        base.ChangeTheme(ThemeColor);
+        StateHasChanged();
+        base.OnInitialized();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(DocumentName))
+        {
+            var document = await base.GetDocumentAsync(DocumentName + ".jpg");
+
+            string jsonStr = System.Text.Encoding.UTF8.GetString(document.Data);
+            var json = System.Text.Json.JsonSerializer.Deserialize<Dictionary<String, Object>>(jsonStr);
+
+            await base.DoodleDraw.RestoreCurrentDrawState(System.Text.Json.JsonSerializer.Serialize(json));
+
+        }
+        else
+        {
+            NavigationManager.NavigateTo($"/{Identifier}");
+        }
+        await base.OnParametersSetAsync();
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _renderedOnce = true;
+
+            StateHasChanged();
+        }
+    }
+
+}
+

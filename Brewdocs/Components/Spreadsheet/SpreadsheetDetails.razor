@@ -1,5 +1,5 @@
 ﻿@page "/Spreadsheets/{DocumentName}"
-@inherits PageBase
+@inherits SpreadsheetPage
 @using Syncfusion
 @using Syncfusion.Blazor.Grids
 @using Syncfusion.XlsIO
@@ -11,7 +11,7 @@
         <FlexContainer Class="text-align-center">
             <FlexColumn Gap="4" Style="width:100%;">
                 <h6 style="place-self:center;" class="mb-4">Loading...</h6>
-                <Brewdocs.Components.Shared.Loaders.RollerLoader Color="@_themeColor" Scale="2" />
+                <Brewdocs.Components.Shared.Loaders.RollerLoader Color="@ThemeColor" Scale="2" />
             </FlexColumn>
         </FlexContainer>
     }
@@ -61,15 +61,9 @@
 
     private List<IWorksheet> Worksheets { get; set; } = default!;
 
-    public override string Identifier => "Spreadsheets";
-
     private bool _loading = true;
 
     private bool _renderedOnce = false;
-
-    private string _themeColor = "var(--bs-green)";
-
-    public override string ThemeColor => "var(--bs-green)";
 
     private string ImageUrl = "";
 
@@ -90,8 +84,7 @@
 
     protected override void OnParametersSet()
     {
-        base.ChangeTheme(_themeColor);
-        //base.ChangeTheme("var(--bs-success-text-emphasis)");
+        base.ChangeTheme(ThemeColor);
         base.OnParametersSet();
     }
 
@@ -146,7 +139,7 @@
         }
         else
         {
-            NavigationManager.NavigateTo("/Spreadsheets");
+            NavigationManager.NavigateTo($"/{Identifier}");
         }
         await base.OnParametersSetAsync();
     }

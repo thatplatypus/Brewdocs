@@ -1,5 +1,5 @@
 ﻿@page "/Doodles"
-@inherits PageBase
+@inherits Components.Doodles.DoodlePage
 @using Syncfusion
 @using Doodle.State
 
@@ -12,7 +12,7 @@
     @if (_renderedOnce)
     {
         <div style="height: 80vh;">
-            <DoodleDraw DataAttributeName="doodle" @ref="_doodleDraw" OnSaveDoodle="SaveDoodle">
+            <DoodleDraw DataAttributeName="doodle" @ref="DoodleDraw" OnSaveDoodle="SaveDoodle">
 
             </DoodleDraw>
         </div>
@@ -21,11 +21,9 @@
 </div>
 
 @code {
-    private DoodleDraw _doodleDraw;
+    public override string Identifier => DocumentTypes.Doodles;
 
-    public override string Identifier => "Doodles";
-
-    public override string ThemeColor => "var(--bs-purple)";
+    public override string ThemeColor => ThemeColors.Doodles;
 
     private bool _loading = true;
 
@@ -64,12 +62,7 @@
 
     private void SaveDoodle(string stateData)
     {
-        _doodleDraw.Options.ToolbarConfig.ShowDrawActionsUndo = true;
-    }
-
-    private async void ChangeHandler(object sender, EventArgs e)
-    {
-        DoodleStateManager s = (DoodleStateManager)sender;
+        DoodleDraw.Options.ToolbarConfig.ShowDrawActionsUndo = true;
     }
 
 }
